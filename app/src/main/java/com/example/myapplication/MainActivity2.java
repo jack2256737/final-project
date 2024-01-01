@@ -39,6 +39,14 @@ public class MainActivity2 extends AppCompatActivity {
     private TextView tv_num,tv_question;
     private RadioGroup rg;
     private RadioButton rb_A,rb_B,rb_C,rb_D;
+    private void updateUIWithData() {
+        tv_question.setText(data.questions[num].Q_text);
+        rb_A.setText(data.questions[num].A);
+        rb_B.setText(data.questions[num].B);
+        rb_C.setText(data.questions[num].C);
+        rb_D.setText(data.questions[num].D);
+        answer = data.questions[num].answer;
+    }
     int num=0,point=0,answer=0,selectedAnswer=0;
     Data data;
 
@@ -97,37 +105,25 @@ public class MainActivity2 extends AppCompatActivity {
                 break;
         }
 
-        Request request =new Request.Builder().url(URL).build();
         num=0;
         tv_num.setText("第"+(num+1)+"題");
 
-        new OkHttpClient().newCall(request).enqueue(new Callback(){
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response)throws IOException {
-                if(response.code()==200){
-                    if(response.body()==null) return;
-                    data = new Gson().fromJson(response.body().string(),Data.class);
-
-                    runOnUiThread(()->{
-                        tv_question.setText(data.questions[num].Q_text);
-                        rb_A.setText(data.questions[num].A);
-                        rb_B.setText(data.questions[num].B);
-                        rb_C.setText(data.questions[num].C);
-                        rb_D.setText(data.questions[num].D);
-                        answer=data.questions[num].answer;
-                    });
-
-                }else if(!response.isSuccessful()){
-                    Log.e("伺服器錯誤",response.code()+" "+response.message());
-                }else{
-                    Log.e("其他錯誤",response.code()+" "+response.message());
+        Request request =new Request.Builder().url(URL).build();
+        new Thread(() -> {
+            try {
+                Response response = new OkHttpClient().newCall(request).execute();
+                if (response.isSuccessful() && response.body() != null) {
+                    data = new Gson().fromJson(response.body().string(), Data.class);
+                    runOnUiThread(() -> updateUIWithData());
+                } else if (!response.isSuccessful()) {
+                    Log.e("伺服器錯誤", response.code() + " " + response.message());
+                } else {
+                    Log.e("其他錯誤", response.code() + " " + response.message());
                 }
+            } catch (IOException e) {
+                Log.e("查詢失敗", e.getMessage());
             }
-            @Override
-            public void onFailure(@NonNull Call call,@NonNull IOException e){
-                Log.e("查詢失敗",e.getMessage());
-            }
-        });
+        }).start();
 
         btn_previous.setOnClickListener(view -> {
             rg.clearCheck();
@@ -136,16 +132,7 @@ public class MainActivity2 extends AppCompatActivity {
             }else{
                 num--;
                 tv_num.setText("第"+(num+1)+"題");
-
-                runOnUiThread(()->{
-                    tv_question.setText(data.questions[num].Q_text);
-                    rb_A.setText(data.questions[num].A);
-                    rb_B.setText(data.questions[num].B);
-                    rb_C.setText(data.questions[num].C);
-                    rb_D.setText(data.questions[num].D);
-                    answer=data.questions[num].answer;
-                });
-
+                runOnUiThread(() -> updateUIWithData());
             }
         });
 
@@ -160,15 +147,7 @@ public class MainActivity2 extends AppCompatActivity {
             }else{
                 num++;
                 tv_num.setText("第"+(num+1)+"題");
-
-                runOnUiThread(()->{
-                    tv_question.setText(data.questions[num].Q_text);
-                    rb_A.setText(data.questions[num].A);
-                    rb_B.setText(data.questions[num].B);
-                    rb_C.setText(data.questions[num].C);
-                    rb_D.setText(data.questions[num].D);
-                    answer=data.questions[num].answer;
-                });
+                runOnUiThread(() -> updateUIWithData());
             }
         });
 

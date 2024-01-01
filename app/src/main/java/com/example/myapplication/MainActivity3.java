@@ -20,9 +20,9 @@ public class MainActivity3 extends AppCompatActivity {
         btn_ret = findViewById(R.id.btn_ret);
 
         int finalScore = getIntent().getIntExtra("final_score", 0);
-
-        String passStatus = (finalScore >= 60) ? "恭喜!!" : "再接再厲。";
-        String message = "你的總分：" + finalScore + "，" + passStatus;
+        int finalScore1 = finalScore*2/3;
+        String passStatus = (finalScore1 >= 60) ? "恭喜!!" : "再接再厲。";
+        String message = "你的總分：" + finalScore1 + "，" + passStatus;
 
         textViewFinalScore.setText(message);
 
